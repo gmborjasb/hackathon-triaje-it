@@ -4,7 +4,7 @@ import subprocess
 import urllib.request
 
 # Este es el ID fijo de tu aplicación en AWS Amplify
-APP_ID = "d1mpo4s6w2qjvd"
+APP_ID = "d1i6a7mh99zymh"
 BRANCH_NAME = "main"
 
 def run(cmd, shell=True, cwd=None):

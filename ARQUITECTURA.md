@@ -35,30 +35,22 @@ graph TD
         VPC["VPC Principal (10.0.0.0/16)"]
         
         subgraph "Public Subnet (10.0.1.0/24)"
-            SG_API["SG: sg-apigw<br/>Inbound: 443 (0.0.0.0/0)"]
-            
-            GW_Write["API Gateway<br/>(DispatcherAPI)"]
-            GW_Read["API Gateway<br/>(LectorAPI)"]
-            GW_Chat["API Gateway<br/>(ChatbotAPI)"]
+            %% En lugar de API Gateways, usamos Lambda Function URLs
         end
         
         subgraph "Private Subnet (10.0.2.0/24)"
-            SG_LAMBDA["SG: sg-lambda<br/>Inbound: sg-apigw<br/>Outbound: 0.0.0.0/0"]
+            SG_LAMBDA["SG: sg-lambda<br/>Outbound: 0.0.0.0/0"]
             
-            L_Write["λ DispatcherTickets<br/>(Python 3.9)"]
-            L_Read["λ LectorTickets<br/>(Python 3.9)"]
-            L_Process["λ ProcesarTicketGroq<br/>(Python 3.9)"]
-            L_Chat["λ ChatbotRAG<br/>(Python 3.9)"]
+            L_Write["λ DispatcherTickets<br/>(Function URL)"]
+            L_Read["λ LectorTickets<br/>(Function URL)"]
+            L_Process["λ ProcesarTicketGroq<br/>(Event Driven)"]
+            L_Chat["λ ChatbotRAG<br/>(Function URL)"]
             
             SQS["Amazon SQS<br/>(tickets-queue)"]
             DDB[("Amazon DynamoDB<br/>(Tickets Table)")]
         end
         
         %% Conexiones internas AWS
-        GW_Write -->|HTTPS / Invoke| L_Write
-        GW_Read -->|HTTPS / Invoke| L_Read
-        GW_Chat -->|HTTPS / Invoke| L_Chat
-        
         L_Write -->|PutItem| DDB
         L_Write -->|SendMessage| SQS
         L_Read -->|Scan/GetItem| DDB
@@ -74,9 +66,9 @@ graph TD
     end
 
     %% Conexiones Frontend -> AWS
-    Frontend -->|POST /upload| GW_Write
-    Frontend -->|GET /tickets| GW_Read
-    Frontend -->|POST /query| GW_Chat
+    Frontend -->|POST /upload| L_Write
+    Frontend -->|GET /tickets| L_Read
+    Frontend -->|POST /query| L_Chat
 
     %% Conexiones Lambda -> AI
     L_Process <-->|HTTPS API Auth| Groq
