@@ -52,6 +52,22 @@ VITE_API_URL_CHATBOT=https://<TU_API_ID_CHATBOT>.execute-api.us-east-1.amazonaws
 
 El servidor estará disponible en http://localhost:5173.
 
+## Despliegue en AWS Amplify (Producción)
+
+Dado que los roles de IAM pueden estar restringidos en entornos de AWS Academy, el despliegue a **AWS Amplify** se realiza mediante un script de actualización manual preconfigurado.
+
+Si realizas cambios en el código de React y deseas publicarlos en la nube, ejecuta desde la raíz del proyecto:
+
+```bash
+python3 infraestructura/update_amplify.py
+```
+
+Este script automáticamente:
+1. Re-compilará el proyecto para producción (`npm run build`).
+2. Empaquetará la carpeta `dist/` en un archivo `.zip`.
+3. Subirá el paquete directamente a la aplicación de AWS Amplify configurada.
+4. Tu URL seguirá siendo la misma pero con los últimos cambios en vivo.
+
 ## Características Especiales
 - Polling Automático: La vista Home consulta el estado de los tickets (`LectorAPI`) cada 3 segundos automáticamente para reflejar los cambios realizados por la Lambda de IA en AWS de manera fluida.
 - Dark Mode UI: Interfaz inmersiva con colores vibrantes y desenfoques (backdrop-blur) optimizada para ambientes nocturnos de centros de datos.

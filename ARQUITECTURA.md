@@ -8,9 +8,12 @@ El proyecto implementa una arquitectura multicloud orientada a eventos, serverle
 graph TD
     %% Usuarios y Frontend
     User(("Usuario<br/>(Soporte IT)"))
-    Frontend["React Frontend<br/>(Dashboard / Vite)"]
     
-    User <-->|HTTP/WS| Frontend
+    subgraph "AWS Edge / CDN"
+        Frontend["React Frontend<br/>(AWS Amplify Hosting)"]
+    end
+    
+    User <-->|HTTPS| Frontend
 
     %% Región OCI Secundaria (Parcialmente implementada)
     subgraph "Oracle Cloud Infrastructure (sa-saopaulo-1)"

@@ -15,7 +15,7 @@ El proyecto emplea una arquitectura Serverless distribuida principalmente en Ama
 | Backend OCI | Oracle Functions, API Gateway, Container Registry |
 | Inteligencia Artificial | Groq API (LLM: `llama-3.1-8b-instant`) |
 | Motor RAG (Vector DB) | Pinecone Serverless (`triaje-tickets`, modelo: `multilingual-e5-large`) |
-| Frontend | React 18, Vite, Tailwind CSS, shadcn/ui |
+| Frontend | React 18, Vite, Tailwind CSS, shadcn/ui (Alojado en **AWS Amplify**) |
 
 ---
 
