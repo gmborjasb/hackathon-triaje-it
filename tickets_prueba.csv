@@ -1,0 +1,8 @@
+ticket_id,texto
+TKT-1001,No puedo conectarme a la VPN de la empresa desde esta mañana. Me sale el error de credenciales inválidas pero no he cambiado mi contraseña.
+TKT-1002,Mi computadora portátil está haciendo un ruido muy fuerte en la parte del ventilador y se apaga de repente después de 15 minutos de uso intenso.
+TKT-1003,Necesito acceso a la base de datos de producción para hacer la consulta del reporte de fin de mes. Mi usuario actual de lectura no funciona.
+TKT-1004,La impresora del piso 3 no quiere imprimir. Sale un mensaje que dice 'Atasco de papel en la bandeja 2' pero ya revisé y no hay ningún papel atascado.
+TKT-1005,He recibido un correo muy extraño del supuesto gerente de Finanzas pidiéndome que haga un pago urgente en bitcoin a una billetera externa. Creo que es phishing.
+TKT-1006,El sistema de facturación ERP está extremadamente lento. Tarda como 2 minutos en guardar una factura y la página web principal carga a medias.
+TKT-1007,Al intentar abrir Adobe Illustrator me dice que mi licencia ha expirado. Necesito hacer unos diseños urgentes para la campaña de marketing.
