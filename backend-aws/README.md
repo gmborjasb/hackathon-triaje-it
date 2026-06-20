@@ -2,33 +2,36 @@
 
 Este directorio contiene el código fuente en Python de las 4 funciones AWS Lambda que conforman el corazón del procesamiento, almacenamiento y razonamiento del sistema Triaje-IT.
 
-La arquitectura sigue un patrón asíncrono y orientado a eventos:
-`API Gateway -> Lambda -> DynamoDB -> SQS -> Lambda -> Groq/Pinecone`
+La arquitectura sigue un patron asincrono y orientado a eventos:
+`API Gateway (TriajeAPI) -> Lambda -> DynamoDB -> SQS -> Lambda -> Groq/Pinecone`
+
+**API Gateway activo:** `https://d8ali1wk47.execute-api.us-east-1.amazonaws.com`
 
 ## Funciones Lambda
 
 ### 1. `DispatcherTickets`
 - Ubicación: `lambda_dispatcher/app.py`
 - Responsabilidad: Recibe el array JSON del frontend (vía API Gateway), valida el formato, guarda cada ticket en la base de datos DynamoDB con el estado `PENDIENTE` y empuja un mensaje a la cola SQS por cada ticket para su procesamiento asíncrono.
-- Trigger: HTTP POST (API Gateway `DispatcherAPI`)
+- Trigger: HTTP POST -> ruta `ANY /upload` del API Gateway `TriajeAPI`
 - Variables de Entorno: `SQS_QUEUE_URL` (URL de la cola SQS)
 
 ### 2. `ProcesarTicketGroq`
 - Ubicación: `lambda_procesador/app.py`
 - Responsabilidad: Es el "Cerebro" del sistema. Lee los mensajes encolados de SQS, marca el ticket como `PROCESANDO`, se conecta a la API de Groq (Llama 3.1) para analizar el problema y generar una solución. Luego guarda el resultado en DynamoDB (`RESUELTO`). Finalmente, envía el texto completo a Pinecone Inference API para crear el Vector (Embedding) y guardarlo en la base de datos vectorial para el Chatbot.
-- Trigger: Mensajes de SQS (`tickets-queue`)
+- Trigger: Event Source Mapping de SQS (`tickets-queue`), batch=1, concurrency=3
 - Variables de Entorno: `GROQ_API_KEY`, `PINECONE_API_KEY`, `PINECONE_HOST`
-- Dependencias Especiales: `groq` (debe estar empaquetada para Linux, ver abajo).
+- Dependencias Especiales: `groq` (debe estar empaquetada junto al codigo en el .zip).
+- Gestion de Rate Limits: si Groq responde 429, la funcion lanza una excepcion para que SQS reencole el mensaje automaticamente (hasta 3 intentos antes de pasar a la DLQ).
 
 ### 3. `LectorTickets`
 - Ubicación: `lambda_lector/app.py`
 - Responsabilidad: Función de sólo lectura. Realiza un Scan o GetItem sobre DynamoDB para devolver la lista de tickets al Frontend y permitir el pintado del Dashboard en tiempo real.
-- Trigger: HTTP GET (API Gateway `LectorAPI`)
+- Trigger: HTTP GET -> ruta `ANY /tickets` del API Gateway `TriajeAPI`
 
 ### 4. `ChatbotRAG`
 - Ubicación: `lambda_chatbot/app.py`
 - Responsabilidad: Motor conversacional. Recibe la pregunta del usuario desde el dashboard, la convierte en un embedding matemático, busca similitudes en el índice `triaje-tickets` de Pinecone y le envía los tickets históricos encontrados al LLM de Groq para generar una respuesta fundamentada (RAG).
-- Trigger: HTTP POST (API Gateway `ChatbotAPI`)
+- Trigger: HTTP POST -> ruta `ANY /query` del API Gateway `TriajeAPI`
 - Variables de Entorno: `GROQ_API_KEY`, `PINECONE_API_KEY`, `PINECONE_HOST`
 - Dependencias Especiales: `groq`.
 
@@ -47,9 +50,23 @@ pip3 install groq -t . --platform manylinux2014_x86_64 --only-binary=:all:
 
 ---
 
-## Script Rápido de Despliegue
+## Redespliegue Completo (Disaster Recovery)
 
-Si necesitas volver a subir los zips después de modificar el código localmente:
+Si tu cuenta de AWS Academy se reinicia, ejecuta el script automatizado desde la raiz del proyecto:
+
+```bash
+export GROQ_API_KEY="tu_groq_api_key"
+export PINECONE_API_KEY="tu_pinecone_api_key"
+./infraestructura/deploy_disaster_recovery.sh
+```
+
+Este script recrea DynamoDB, SQS, las 4 Lambdas, el API Gateway y actualiza el frontend en Amplify automaticamente.
+
+---
+
+## Actualizacion Manual de una Lambda
+
+Si solo necesitas subir el codigo de una Lambda en particular:
 
 ```bash
 # 1. Dispatcher
