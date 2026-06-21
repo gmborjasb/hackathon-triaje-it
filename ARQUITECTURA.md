@@ -67,12 +67,12 @@ graph TD
         APIGW -->|"ANY /tickets"| L_Read
         APIGW -->|"ANY /query"| L_Chat
 
-        %% Flujo de datos interno
-        L_Write -->|PutItem (estado=PENDIENTE)| DDB
+        %% Flujo de datos interno (CORREGIDO)
+        L_Write -->|"PutItem (estado=PENDIENTE)"| DDB
         L_Write -->|SendMessage| SQS
-        L_Read -->|Scan/GetItem| DDB
+        L_Read -->|"Scan/GetItem"| DDB
         SQS -->|"Event Trigger (batch=1)"| L_Process
-        L_Process -->|UpdateItem (estado=RESUELTO)| DDB
+        L_Process -->|"UpdateItem (estado=RESUELTO)"| DDB
     end
 
     %% Servicios de IA Externos
@@ -86,11 +86,11 @@ graph TD
     Frontend -->|"GET /tickets (polling 3s)"| APIGW
     Frontend -->|"POST /query (RAG)"| APIGW
 
-    %% Conexiones Lambda -> IA
-    L_Process <-->|Clasificar y resolver| Groq
-    L_Process -->|Embed & Upsert vector| Pinecone
-    L_Chat <-->|Query top-3 vectors| Pinecone
-    L_Chat <-->|Generar respuesta RAG| Groq
+    %% Conexiones Lambda -> IA (CORREGIDO)
+    L_Process <-->|"Clasificar y resolver"| Groq
+    L_Process -->|"Embed & Upsert vector"| Pinecone
+    L_Chat <-->|"Query top-3 vectors"| Pinecone
+    L_Chat <-->|"Generar respuesta RAG"| Groq
 ```
 
 ---
